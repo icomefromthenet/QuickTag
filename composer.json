@@ -1,0 +1,44 @@
+{
+    "name": "icomefromthenet/QuickTag",
+    "description": "Tag Library build on Doctrine DBAL",
+    "keywords": [ "doctrine","tag" ],
+    "homepage": "http://github.com/icomefromthenet/QuickTag",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Lewis Dyer",
+            "email": "getintouch@icomefromthenet.com",
+            "homepage": "http://www.icomefromthenet.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://packages.zendframework.com/"
+        }
+    ],
+    "require-dev" : {
+        "icomefromthenet/faker"     : "dev-master",
+        "icomefromthenet/migration" : "dev-master",
+        "monolog/monolog"           : "1.2.*",
+        "silex/silex"               : "dev-master",
+        "symfony/dom-crawler"       : "dev-master",
+        "symfony/browser-kit"       : "dev-master"
+    },
+    
+    "require" : {
+        "icomefromthenet/dbal-gateway" : "dev-master",
+        "symfony/event-dispatcher"     : "2.1.*",
+        "symfony/validator"            : "2.1.*"
+    },
+    
+    "autoload": {
+        "psr-0": {
+            "QuickTag"     : "src/",
+            "QuickTagSilex": "src/",
+            "Zend"         : "lib/" 
+        }
+    }
+    
+}

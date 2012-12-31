@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<schema name="quick_tag">
+ 
+ <writer platform="mysql" format="phpunit" />
+
+ 
+ <table name="quicktag_tags" generate="100">
+  
+  <column name="tag_id" type="integer">
+   <datatype name="autoincrement" />
+  </column>
+  
+  <column name="tag_user_context" type="integer">
+   <alternate step ="1">
+     <datatype name="constant_number" value="1" />
+     <datatype name="constant_number" value="2" />
+     <datatype name="constant_number" value="3" />
+   </alternate>
+  </column>
+  
+  <column name="tag_date_created" type="datetime">
+   <datatype name="date">
+        <option name="start"  value="today" />
+        <option name="modify" value="+1 day" />
+        <option name="max"    value="today +10 weeks" />
+    </datatype>
+  </column>
+  
+  <column name="tag_weight" type="float">
+   <datatype name="range">
+    <option name="max"    value="100" />
+    <option name="min"    value="1" />
+    <option name="random" value="true" />
+    <option name="round"  value="2" />
+   </datatype>
+  </column>
+  
+  <column name="tag_title" type="string">
+   <datatype name="alphanumeric">
+     <option name="format" value="ccvdx" />
+   </datatype>
+  </column>
+  
+ </table>
+</schema>

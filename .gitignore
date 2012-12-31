@@ -1,0 +1,9 @@
+migrations/config/*.php
+faker/config/*.php
+faker/dump/*.xml
+faker/dump/*.sql
+composer.lock
+.vagrant
+*.komodoproject
+vendor
+manifests/
