@@ -21,10 +21,6 @@
             <directory suffix="Test.php">src/QuickTag/Tests/</directory>
             <exclude>src/QuickTag/Tests/TestsWithFixture.php</exclude>
         </testsuite>
-        <testsuite name="api">
-            <directory suffix="Test.php">src/QuickTagSilex/Tests/</directory>
-            <exclude>src/QuickTagSilex/Tests/TestsWithFixture.php</exclude>
-        </testsuite>
   </testsuites>  
     
 </phpunit>

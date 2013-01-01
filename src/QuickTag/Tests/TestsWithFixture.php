@@ -6,6 +6,8 @@ use PHPUnit_Extensions_Database_Operation_Composite;
 use PHPUnit_Extensions_Database_TestCase;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use Symfony\Component\HttpKernel\Client,
+    Symfony\Component\HttpKernel\HttpKernel;
 
 class TestsWithFixture extends PHPUnit_Extensions_Database_TestCase
 {
@@ -108,6 +110,47 @@ class TestsWithFixture extends PHPUnit_Extensions_Database_TestCase
         
         return $table;
         
+    }
+    
+    
+    //------------------------------------------------------------------
+    # WebTestCase Implementation
+    
+    protected $app;
+
+    /**
+     * PHPUnit setUp for setting up the application.
+     *
+     * Note: Child classes that define a setUp method must call
+     * parent::setUp().
+     */
+    public function setUp()
+    {
+        parent::setUp();
+        
+        $this->app = $this->createApplication();
+    }
+
+    /**
+     * Creates the application.
+     *
+     * @return HttpKernel
+     */
+    public function createApplication()
+    {
+       
+    }
+
+    /**
+     * Creates a Client.
+     *
+     * @param array $server An array of server parameters
+     *
+     * @return Client A Client instance
+     */
+    public function createClient(array $server = array())
+    {
+        return new Client($this->app, $server);
     }
     
 }

@@ -36,7 +36,6 @@
     "autoload": {
         "psr-0": {
             "QuickTag"     : "src/",
-            "QuickTagSilex": "src/",
             "Zend"         : "lib/" 
         }
     }
