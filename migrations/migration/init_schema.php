@@ -14,7 +14,7 @@ class init_schema implements EntityInterface
     {
         $table = $builder->createTable("quicktag_tags");
         
-        $table->addColumn('tag_id'          ,'integer' ,array("unsigned" => true));
+        $table->addColumn('tag_id'          ,'integer' ,array("unsigned" => true,'autoincrement' => true));
         $table->addColumn('tag_user_context','integer' ,array("unsigned" => true,'notnull' => false));
         $table->addColumn('tag_date_created','datetime',array('notnull' => true));
         $table->addColumn('tag_weight'      ,'float'   ,array("unsigned" => true,'notnull' => false));

@@ -4,7 +4,14 @@ namespace QuickTag\Model;
 use DateTime;
 use DBALGateway\Exception as DBALGatewayException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use QuickTag\QuickTagException;
 
+/**
+  *  Mapper To Tag Entity
+  *
+  *  @author Lewis Dyer <getintouch@icomefromthenet.com>
+  *  @since 0.0.1
+  */
 class TagMapper
 {
     /**
@@ -46,7 +53,12 @@ class TagMapper
                         ->insert();
                 
                 if($result) {
-                    $tag->setTagId($this->gateway->lastInsertId());
+                    $tag->setTagId((integer)$this->gateway->lastInsertId());
+                }
+                
+                # normalise the return
+                if($result === null) {
+                    $result = false;
                 }
                 
             } catch(DBALGatewayException $exception) {
@@ -78,6 +90,11 @@ class TagMapper
                             ->filterById($tag->getTagId())
                         ->end()
                     ->update();
+                
+                # normalise the return
+                if($result === null) {
+                    $result = false;
+                }
                 
             } catch(DBALGatewayException $exception) {
                 throw new QuickTagException($exception->getMessage(),0,$exception);
@@ -139,10 +156,16 @@ class TagMapper
             throw new QuickTagException('Given tag does not have a database id assigned can not delete');
         } else {
             
+            $result = $this->gateway->deleteQuery()
+                           ->start()
+                                ->filterById($tag->getTagId())
+                           ->end()
+                      ->delete();
             
-            
-            
-            $result = false;
+            # reset the tag id          
+            if($result) {
+                $tag->setTagId(0);
+            }
         }
         
         return $result;
@@ -184,7 +207,7 @@ class TagMapper
       *  Note : LookupEvent is fired by the model not this api
       *
       *  @access public
-      *  @return QuickTag\Model\TagQuery
+      *  @return DBALGateway\Container\SelectContainer
       */
     public function find()
     {

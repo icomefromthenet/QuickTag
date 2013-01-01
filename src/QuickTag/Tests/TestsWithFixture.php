@@ -95,7 +95,7 @@ class TestsWithFixture extends PHPUnit_Extensions_Database_TestCase
     {
         $table = new \DBALGateway\Metadata\Table('quicktag_tags');
         
-        $table->addColumn('tag_id'          ,'integer' ,array("unsigned" => true));
+        $table->addColumn('tag_id'          ,'integer' ,array("unsigned" => true,'autoincrement' => true));
         $table->addColumn('tag_user_context','integer' ,array("unsigned" => true,'notnull' => false));
         $table->addColumn('tag_date_created','datetime',array('notnull' => true));
         $table->addColumn('tag_weight'      ,'float'   ,array("unsigned" => true,'notnull' => false));

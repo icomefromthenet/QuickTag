@@ -60,7 +60,11 @@ class LogSubscriber implements EventSubscriberInterface
       */
     public function logLookupEvent(TagLookupEvent $event)
     {
-        $this->log->info('',array());
+        $lookupCount = count($event->getResult());
+        
+        if( $lookupCount > 0) {
+            $this->log->info(sprintf('QuickTag:: Looking up %s tags',$lookupCount),array());    
+        } 
     }
     
     /**
@@ -71,7 +75,11 @@ class LogSubscriber implements EventSubscriberInterface
       */
     public function logRemoveEvent(TagRemoveEvent $event)
     {
-        $this->log->info('',array());
+        if($event->getResult() === true) {
+            $this->log->info(sprintf('QuickTag:: Remove tag at ID %s with title %s',(string)$event->getRemovedTag()->getTagId(),(string)$event->getRemovedTag()->getTitle()),array());    
+        } else {
+            $this->log->info(sprintf('QuickTag:: Failed to remove tag at ID %s with title %s',(string)$event->getRemovedTag()->getTagId(),(string)$event->getRemovedTag()->getTitle()),array());    
+        }
     }
     
     /**
@@ -82,7 +90,11 @@ class LogSubscriber implements EventSubscriberInterface
       */
     public function logStoreEvent(TagStoreEvent $event)
     {
-        $this->log->info('',array());
+        if($event->getResult() === true) {
+            $this->log->info(sprintf('QuickTag:: Stored Tag at ID %s with title %s',(string)$event->getStoredTag()->getTagId(),(string)$event->getStoredTag()->getTitle()),array());    
+        } else {
+            $this->log->info(sprintf('QuickTag:: Failed to stored Tag at ID %s with title %s',(string)$event->getStoredTag()->getTagId(),(string)$event->getStoredTag()->getTitle()),array());    
+        }
     }
    
     

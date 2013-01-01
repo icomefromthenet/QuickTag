@@ -4,7 +4,7 @@ namespace QuickTag\Log;
 use Monolog\Logger;
 
 /**
-  *  Base 
+  *  Bridget Between Internal Logger and Monolog
   *
   *  @author Lewis Dyer <getintouch@icomefromthenet.com>
   *  @since 0.0.1

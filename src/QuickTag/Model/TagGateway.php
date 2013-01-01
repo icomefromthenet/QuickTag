@@ -37,7 +37,7 @@ class TagGateway extends AbstractTable
         $result = parent::findOne();
         $collection = new ArrayCollection();
         
-        if(!$result instanceof StoredTag) {
+        if($result instanceof StoredTag) {
             $collection->add($result);
         }
         
@@ -50,10 +50,6 @@ class TagGateway extends AbstractTable
     public function find()
     {
         $result = parent::find();
-        
-        if(!$result instanceof Collection) {
-            $result = new ArrayCollection();
-        }
         
         $this->event_dispatcher->dispatch(TagEventsMap::LOOKUP,new TagLookupEvent($result));
         

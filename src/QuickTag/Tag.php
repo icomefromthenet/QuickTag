@@ -10,7 +10,12 @@ use QuickTag\Model\TagMapper,
     QuickTag\Events\TagRemoveEvent,
     QuickTag\Events\TagStoreEvent;   
 
-
+/**
+  *  Tag Storage API, Store your tags in a database
+  *
+  *  @author Lewis Dyer <getintouch@icomefromthenet.com>
+  *  @since 0.0.1
+  */
 class Tag
 {
     /**
@@ -23,7 +28,6 @@ class Tag
       */
     protected $mapper;    
     
-        
     
     /**
       *  Class Constructor
@@ -89,7 +93,7 @@ class Tag
     {
         $result = $this->mapper->delete($tag);
         
-        $this->event->dispatch(TagEventsMap::REMOVE,new TagStoreEvent($result,$tag));
+        $this->event->dispatch(TagEventsMap::REMOVE,new TagRemoveEvent($result,$tag));
         
         return $result;
         
@@ -101,7 +105,7 @@ class Tag
       *  Note : LookupEvent is fired by the model not this api
       *
       *  @access public
-      *  @return QuickTag\Model\TagQuery
+      *  @return DBALGateway\Container\SelectContainer
       */
     public function findTag()
     {
