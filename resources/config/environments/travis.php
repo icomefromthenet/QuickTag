@@ -42,6 +42,6 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
         'host'      => 'localhost',
         'dbname'    => 'quick_tag',
         'user'      => 'root',
-        'password'  => null,
+        'password'  => '',
     )
 ));
