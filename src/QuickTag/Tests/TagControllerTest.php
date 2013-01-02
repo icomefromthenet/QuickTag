@@ -10,7 +10,6 @@ class TagControllerTest extends TestsWithFixture
     
     public function createApplication()
     {
-        $_SERVER["APP_ENVIRONMENT"] = "development";
         $app = require __DIR__.'/../../../app.php';
         $app['exception_handler']->disable();
         $app['session.test'] = true;
