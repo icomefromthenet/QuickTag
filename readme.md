@@ -1,5 +1,7 @@
 #QuickTag - Tags for your application.
 
+[![Build Status](https://travis-ci.org/icomefromthenet/QuickTag.png?branch=master)](https://travis-ci.org/icomefromthenet/QuickTag)
+
 1. Written using Doctrine DBAL.
 2. Optional Restful Silex API Supports GET/POST/PUT/DELETE.
 3. Can be used with Zend/Tag/Cloud, doing tag clouds is easy.
