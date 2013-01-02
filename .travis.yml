@@ -5,7 +5,9 @@ php:
    
 before_script:
   - composer install
-  - pear install phpunit/DbUnit
+  - pyrus set auto_discover 1
+  - pyrus install --force phpunit/DbUnit
+  - phpenv rehash
   - mysql -e 'create database IF NOT EXISTS quick_tag;'
   
 script: phpunit --configuration travis.xml
