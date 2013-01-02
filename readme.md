@@ -24,7 +24,7 @@
 
 ##Running
 
-### Only the library.
+### Just the library.
 
 ```php
 
@@ -211,7 +211,7 @@ During an update the id must be set and only the title and weight and user conte
 
 ```
 
-The API under ```QuickTag\Silex\Provider\TagServiceProvider``` has good examples on how to use the library.
+The API under ```QuickTag\Silex\Provider\TagServiceProvider``` has basic examples on how to use the library.
 
 
 ### Using Zend Tag Cloud
