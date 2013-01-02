@@ -2,9 +2,16 @@ language: php
 php:
   - 5.4
   - 5.3
+  - 5.3.2
    
 before_script:
-  - composer install
+  - composer install --dev
+  - pyrus set auto_discover 1
+  - pyrus install --force phpunit/DbUnit
+  - phpenv rehash
   - mysql -e 'create database IF NOT EXISTS quick_tag;'
+  - ./vendor/bin/migrate.php app:install --path migrations --dsn mysql://root:@127.0.0.1/quick_tag?migration_table=migrations_data
+  - ./vendor/bin/migrate.php app:build --path migrations --force --dsn mysql://root:@127.0.0.1/quick_tag?migration_table=migrations_data
+  
   
 script: phpunit --configuration travis.xml
