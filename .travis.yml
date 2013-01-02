@@ -5,6 +5,7 @@ php:
    
 before_script:
   - composer install
+  - pear install phpunit/DbUnit
   - mysql -e 'create database IF NOT EXISTS quick_tag;'
   
 script: phpunit --configuration travis.xml
