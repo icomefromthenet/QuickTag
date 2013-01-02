@@ -23,18 +23,6 @@ class TagServiceProvider implements ServiceProviderInterface
     protected $index;
     
     /**
-      *  Return the meta data needed
-      *
-      *  @access public
-      *  @return DBALGateway\Metadata\Table
-      */
-    protected function getDatabseMetaData($tableName)
-    {
-        
-    }
-    
-    
-    /**
     * Class Constructor
     *
     * @access public
@@ -128,13 +116,6 @@ class TagServiceProvider implements ServiceProviderInterface
                 return new \QuickTag\Silex\Formatter\TagFormatter();
         });
                 
-        
-        #------------------------------------------------------------------
-        # Setup Routes / Controllers
-        #
-        #------------------------------------------------------------------
-
-        $app->mount('/', new TagProvider($index));
         
        
     }

@@ -11,17 +11,45 @@ use QuickTag\Model\StoredTag;
 
 class TagProvider extends BaseProvider implements ControllerProviderInterface
 {
+    
+    
     public function connect(Application $app)
     {
+        parent::connect($app);
+        
+        # define the routes    
         $controllers = $app['controllers_factory'];
-        $controllers->get('/tags/{id}', array($this,'getTagAction'))->assert('id', '\d+');
-        $controllers->put('/tags/{id}', array($this,'putTagsAction'))->assert('id', '\d+');
-        $controllers->delete('/tags/{id}', array($this,'deleteTagsAction'))->assert('id', '\d+');
+        
+        $controllers->get('/tags/{tag}', array($this,'getTagAction'))
+                    ->assert('tag', '\d+')
+                    ->convert('tag',array($this,'lookupTag'));
+        
+        $controllers->put('/tags/{tag}', array($this,'putTagsAction'))
+                    ->assert('tag', '\d+')
+                    ->convert('tag',array($this,'lookupTag'));
+       
+        $controllers->delete('/tags/{tag}', array($this,'deleteTagsAction'))
+            ->assert('tag', '\d+')
+            ->convert('tag',array($this,'lookupTag'));
+       
         $controllers->get('/tags', array($this,'getTagsAction'));
-        $controllers->post('/tags', array($this,'postTagsAction'));
+        $controllers->post('/tags', array($this,'postTagAction'));
         
         return $controllers;
     }
+    
+    
+    public function lookupTag($tag)
+    {
+        $result = $this->getTagLibrary()->lookupTag((integer)$tag);
+            
+        if(!$result instanceof StoredTag) {
+            $this->getContainer()->abort(404,'Tag Entity not found at ID '.$tag);
+        } 
+        
+        return $result;
+    }
+    
     
     /**
       *  Delete a tag
@@ -29,32 +57,18 @@ class TagProvider extends BaseProvider implements ControllerProviderInterface
       *  @access public
       *  @return string a json response
       */
-    public function deleteTagsAction(Application $app, Request $req, $id)
+    public function deleteTagsAction(Application $app, Request $req, StoredTag $tag)
     {
         $response = array(
             'msg'    => null,
             'result' => null
         );
-        $code = 200;
         
+        # remove the storedTag 
+        $response['result'] = $this->getTagLibrary()->removeTag($tag);                
+        $response['msg']    = 'Removed Tag with id ' .$tag->getTagId();
         
-        try {
-            $tag = $app[$this->index];
-            
-            
-            
-            
-        
-        } catch(\Exception $e) {
-            $code = 500;
-            $response['msg'] = $e->getMessage();
-            $response['result'] = array();
-            $app['monolog']->notice($e->getMessage());
-        }
-        
-        
-        return $this->response($response,$code);
-    
+        return $this->response($response,200);
     }
     
     /**
@@ -63,28 +77,36 @@ class TagProvider extends BaseProvider implements ControllerProviderInterface
       *  @access public
       *  @return string a json response
       */
-    public function putTagsAction(Application $app, Request $req, $id)
+    public function putTagsAction(Application $app, Request $req, StoredTag $tag)
     {
         $response = array(
             'msg'    => null,
             'result' => null
         );
-        $code = 200;
         
+        # Validate Params
+        $errors   = $this->getValidator()->validateValue(array(
+                                           'tagTitle'  => $req->get('tagTitle'),
+                                           'tagWeight' => $req->get('tagWeight')
+                                        ), $this->getValidationRules());
+            
+        if (count($errors) > 0) {
+                $this->getContainer()->abort(400,$this->serializeValidationErrors($errors));
+        } 
         
-        try {
-            $tag = $app[$this->index];
+        # update the tag
+        $tag->setTitle((string)$req->get('tagTitle'));
+        $tag->setWeight((float)$req->get('tagWeight'));
+                    
+        $response['result'] = $this->getTagLibrary()->storeTag($tag);
+        $response['msg']    = "Tag modified at index ".$tag->getTagId();
         
-        } catch(\Exception $e) {
-            $code = 500;
-            $response['msg'] = $e->getMessage();
-            $response['result'] = array();
-            $app['monolog']->notice($e->getMessage());
+        # was the tag updated or no changes made?        
+        if(!$response['result']) {
+            $this->getContainer()->abort(304,"Tag not modified");
         }
-        
-        
-        return $this->response($response,$code);
     
+        return $this->response($response,200);
     }
     
     /**
@@ -99,21 +121,28 @@ class TagProvider extends BaseProvider implements ControllerProviderInterface
             'msg'    => null,
             'result' => null
         );
-        $code = 200;
+     
+        # Validate Params
+        $errors   = $this->getValidator()->validateValue(array(
+                                           'tagTitle'  => $req->get('tagTitle'),
+                                           'tagWeight' => $req->get('tagWeight')
+                                        ), $this->getValidationRules());
+            
+        if (count($errors) > 0) {
+                $this->getContainer()->abort(400,$this->serializeValidationErrors($errors));
+        } 
+        
+        $tag = new StoredTag();
+        
+        $tag->setTitle((string)$req->get('tagTitle'));
+        $tag->setWeight((float)$req->get('tagWeight'));
+        $tag->setTagCreated(new DateTime());
         
         
-        try {
-            $tag = $app[$this->index];
+        $response['result'] = $this->getTagLibrary()->storeTag($tag);        
+        $response['msg']    = sprintf('Stored new tag with title %s tag at id %s',$tag->getTitle(),$tag->getTagId());
         
-        } catch(\Exception $e) {
-            $code = 500;
-            $response['msg'] = $e->getMessage();
-            $response['result'] = array();
-            $app['monolog']->notice($e->getMessage());
-        }
-        
-        
-        return $this->response($response,$code);
+        return $this->response($response,200);
     
     }
     
@@ -127,45 +156,56 @@ class TagProvider extends BaseProvider implements ControllerProviderInterface
     {
         $response = array(
             'msg'    => null,
-            'result' => null
+            'result' => array()
         );
-        $code = 200;
         
+        $limit    = $req->get('limit',100);
+        $offset   = $req->get('offset',0);
+        $dir      = $req->get('dir','asc');
+        $order    = $req->get('order','title');
+        $tagTitle = $req->get('tagTitle','');
         
-        try {
-            $tag = $app[$this->index];
+        $errors = $this->getValidator()->validateValue(array(
+                                                        'limit'    => $limit,
+                                                        'offset'   => $offset,
+                                                        'dir'      => $dir,
+                                                        'order'    => $order,
+                                                        'tagTitle' => $tagTitle
+                                                        ) , $this->getQueryValidationRules());
             
-             if(($now = $req->get('now')) === null) {
-                $now = date('Y-m-s H:m:s');
-            }
-            
-            if(($iterations = $req->get('iterations')) === null) {
-                $iterations = 10;
-            }
-            
-            # filter query params and assign default values
-            $constraint = new Assert\Collection(array(
-                                'now'        => new Assert\DateTime(),
-                                'iterations' => new Assert\Range(array('min' =>1 ,'max' =>100)),
-                        ));
-            
-            
-            $errors = $app['validator']->validateValue(array('now' => $now,'iterations'  => $iterations,), $constraint);
-            
-            if (count($errors) > 0) {
-                throw new LaterJobException($this->serializeValidationErrors($errors));
-            }
-            
-        
-        } catch(\Exception $e) {
-            $code = 500;
-            $response['msg'] = $e->getMessage();
-            $response['result'] = array();
-            $app['monolog']->notice($e->getMessage());
+        if (count($errors) > 0) {
+            $this->getContainer()->abort(400,$this->serializeValidationErrors($errors));
         }
         
+        # fetch query object
+        $query = $this->getTagLibrary()->findTag()
+            ->start()
+                ->limit($limit)
+                ->offset($offset);
+            
+        # pick a orderBy clause
+        if($order === 'title') {
+            $query->orderByTitle($dir);
+        } elseif ($order === 'title') {
+           $query->orderByWeight($dir);
+        } else {
+            $query->orderByCreated($dir);
+        }
         
-        return $this->response($response,$code);
+        # search for a tag starting with xxx        
+        if($tagTitle !== '') {
+            $query->filterByNameStartsWith($tagTitle);
+        }
+        
+        # run the query and push results through formatter
+        $resultCollection = $query->end()->find();
+        $formatter = $this->getTagFormatter();
+        
+        foreach($resultCollection as $tag) {
+            $response['result'][] =  $formatter->toArray($tag);    
+        }
+        
+        return $this->response($response,200);
     
     }
     
@@ -176,40 +216,16 @@ class TagProvider extends BaseProvider implements ControllerProviderInterface
       *  @access public
       *  @return string a json response
       */
-    public function getTagAction(Application $app, Request $req, $id)
+    public function getTagAction(StoredTag $tag)
     {
         $response = array(
             'msg'    => null,
             'result' => array()
         );
-        $code = 200;
-        
-        
-        try {
-            $tag       = $app[$this->index];
-            $formatter = $app[$this->index.'.tagFormatter'];
             
-            # do lookup with the service api
-            $result = $tag->lookupTag((integer)$id);
-            
-            # need to pass result to entity formatter?
-            if(!$result instanceof StoredTag) {
-                $code = 404;
-                $response['msg'] = "Tag not found under ".$id;
-            } else {
-                $response['result'] = $formatter->toArray($result);    
-            }
-                    
-        } catch(\Exception $e) {
-            $code = 500;
-            $response['msg'] = $e->getMessage();
-            $response['result'] = array();
-            $app['monolog']->notice($e->getMessage());
-        }
+        $response['result'] = $this->getTagFormatter()->toArray($tag);    
         
-        
-        return $this->response($response,$code);
-        
+        return $this->response($response,200);
     }
     
 }

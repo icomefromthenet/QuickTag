@@ -36,12 +36,12 @@ class TagControllerTest extends TestsWithFixture
         );
         
         $results = json_decode($client->getResponse()->getContent());
-        $job     = $results->result;
+        $tag     = $results->result;
         
-        $this->assertEquals(1,$job->tagId);
-        $this->assertEquals('rwod4',$job->tagTitle);
-        $this->assertEquals(1,$job->tagWeight);
-        $this->assertEquals(1,$job->tagUserContext);
+        $this->assertEquals(1,$tag->tagId);
+        $this->assertEquals('rwod4',$tag->tagTitle);
+        $this->assertEquals(1,$tag->tagWeight);
+        $this->assertEquals(1,$tag->tagUserContext);
             
     }
     
@@ -59,11 +59,11 @@ class TagControllerTest extends TestsWithFixture
             
     }
     
-    /*
-    public function testDeleteSingleJob()
+    
+    public function testDeleteTag()
     {
-         $client = $this->createClient();
-        $crawler = $client->request('DELETE', '/queue/jobs/71b55e88-7728-3e6c-ac70-4b7760cf3c48');
+        $client = $this->createClient();
+        $crawler = $client->request('DELETE', '/tags/1');
 
         # request returned 200 ok
         $this->assertEquals(
@@ -73,14 +73,15 @@ class TagControllerTest extends TestsWithFixture
         
         $results = json_decode($client->getResponse()->getContent());
         
-        $this->assertEquals(1,$results->result);
+        $this->assertEquals(true,$results->result);
         
     }
     
-    public function testDeleteSingleJobNotFound()
+    
+    public function testDeleteTagNotFound()
     {
         $client = $this->createClient();
-        $crawler = $client->request('DELETE', '/queue/jobs/dae45ce0-48d1-11e2-bcfd-0800200c9a66');
+        $crawler = $client->request('DELETE', '/tags/101');
 
         # request returned 200 ok
         $this->assertEquals(
@@ -88,31 +89,15 @@ class TagControllerTest extends TestsWithFixture
             $client->getResponse()->getStatusCode()
         );
         
-    }
-    
-    public function testPurgeWithBeforeBadStamp()
-    {
-        $client = $this->createClient();
-        $crawler = $client->request('DELETE', '/queue/jobs',array('before' =>'2012'));
-
-        # request returned 200 ok
-        $this->assertEquals(
-            500,
-            $client->getResponse()->getStatusCode()
-        );
-        
-        $results = json_decode($client->getResponse()->getContent());
-        $this->assertEquals(0,count($results->result));
-        $this->assertEquals('[before] This value is not a valid datetime.',$results->msg);
         
     }
     
-    
-    public function testPurge()
+    public function testTagUpdate()
     {
         $client = $this->createClient();
-        $crawler = $client->request('DELETE', '/queue/jobs',array('before' =>'2012-12-18 13:05:00'));
+        $crawler = $client->request('PUT', '/tags/1',array('tagTitle' => 'mytitle','tagWeight'=> 4.56));
 
+        
         # request returned 200 ok
         $this->assertEquals(
             200,
@@ -121,218 +106,207 @@ class TagControllerTest extends TestsWithFixture
         
         $results = json_decode($client->getResponse()->getContent());
         
-        # only purge finished job of which are none in fixture.
-        $this->assertEquals(0,$results->result);
+        $this->assertEquals(true,$results->result);
+            
+    }
+    
+    
+    public function testTagUpdateNoChanges()
+    {
+        $client = $this->createClient();
+        $crawler = $client->request('PUT', '/tags/1',array('tagTitle' => 'rwod4','tagWeight'=> 1));
+
+
+        
+        # request returned 200 ok
+        $this->assertEquals(
+            304,
+            $client->getResponse()->getStatusCode()
+        );
         
     }
     
     
-    public function testNoParams()
+    public function testTagUpdateMissingTitle()
     {
-        $client = $this->createClient();
-        $crawler = $client->request('GET', '/queue/jobs');
+        $client  = $this->createClient();
+        $crawler = $client->request('PUT', '/tags/1', array('tagWeight'=> 1));
 
+        
+        # request returned 200 ok
+        $this->assertEquals(
+            400,
+            $client->getResponse()->getStatusCode()
+        );
+      
+        $results = json_decode($client->getResponse()->getContent());
+        
+        $this->assertEquals('[tagTitle] This value should not be blank.',$results->msg);
+        
+    }
+    
+    public function testTagUpdateMissingWeight()
+    {
+        $client  = $this->createClient();
+        $crawler = $client->request('PUT', '/tags/1', array('tagTitle' => 'rwod4'));
+
+        
+        # request returned 200 ok
+        $this->assertEquals(
+            400,
+            $client->getResponse()->getStatusCode()
+        );
+      
+        $results = json_decode($client->getResponse()->getContent());
+        
+        $this->assertEquals('[tagWeight] This value should not be blank.',$results->msg);
+        
+    }
+    
+    public function testTagUpdateNumericButStringTitle()
+    {
+        $client  = $this->createClient();
+        $crawler = $client->request('PUT', '/tags/1', array('tagTitle' => '1','tagWeight'=> 1));
+
+        
+        # request returned 200 ok
+        $this->assertEquals(
+            200,
+            $client->getResponse()->getStatusCode()
+        );
+              
+    }
+    
+    
+    public function testTagPost()
+    {
+        $client  = $this->createClient();
+        $crawler = $client->request('POST', '/tags', array('tagTitle' => 'mytitle','tagWeight'=> 1));
+
+        
         # request returned 200 ok
         $this->assertEquals(
             200,
             $client->getResponse()->getStatusCode()
         );
         
-        # check if response set to json
-        $client->getResponse()->headers->contains(
-            'Content-Type',
-            'application/json'
-        );
+        $result = json_decode($client->getResponse()->getContent());
         
-        $results = json_decode($client->getResponse()->getContent());
-        $this->assertEquals(500,count($results->result));
-        $this->assertEquals(true,$results->msg);
+        $this->assertEquals('Stored new tag with title mytitle tag at id 101',$result->msg);
+        $this->assertEquals(true,$result->result);
+              
     }
-    
-    
-    public function testWithNegativeLimitParam()
-    {
-        $client = $this->createClient();
-        $crawler = $client->request('GET', '/queue/jobs',array('limit' => -1));
-
-        # request returned 200 ok
-        $this->assertEquals(
-            500,
-            $client->getResponse()->getStatusCode()
-        );
-        
-        $results = json_decode($client->getResponse()->getContent());
-        $this->assertEquals(0,count($results->result));
-        $this->assertEquals('[limit] This value should be 1 or more.',$results->msg);
-        
-    }
-    
-    
-    public function testWithAboveMaxLimitParam()
-    {
-        $client = $this->createClient();
-        $crawler = $client->request('GET', '/queue/jobs',array('limit' => 10000000));
-
-        # request returned 200 ok
-        $this->assertEquals(
-            500,
-            $client->getResponse()->getStatusCode()
-        );
-        
-        $results = json_decode($client->getResponse()->getContent());
-        $this->assertEquals(0,count($results->result));
-        $this->assertEquals('[limit] This value should be 500 or less.',$results->msg);
-        
-    }
-    
-    public function testWithNegativeOffsetParam()
-    {
-        $client = $this->createClient();
-        $crawler = $client->request('GET', '/queue/jobs',array('offset' => -1));
-
-        # request returned 200 ok
-        $this->assertEquals(
-            500,
-            $client->getResponse()->getStatusCode()
-        );
-        
-        $results = json_decode($client->getResponse()->getContent());
-        $this->assertEquals(0,count($results->result));
-        $this->assertEquals('[offset] This value should be 0 or more.',$results->msg);
-        
-    }
-    
-    public function testWithAboveMaxOffsetParam()
-    {
-        $client = $this->createClient();
-        $crawler = $client->request('GET', '/queue/jobs',array('offset' =>9999999999999999999));
-
-        # request returned 200 ok
-        $this->assertEquals(
-            500,
-            $client->getResponse()->getStatusCode()
-        );
-        
-        $results = json_decode($client->getResponse()->getContent());
-        $this->assertEquals(0,count($results->result));
-        $this->assertEquals('[offset] This value should be 2147483647 or less.',$results->msg);
-        
-    }
-    
-    
-    public function testWithBadOrderChoice()
-    {
-        $client = $this->createClient();
-        $crawler = $client->request('GET', '/queue/jobs',array('order' =>'none'));
-
-        # request returned 200 ok
-        $this->assertEquals(
-            500,
-            $client->getResponse()->getStatusCode()
-        );
-        
-        $results = json_decode($client->getResponse()->getContent());
-        $this->assertEquals(0,count($results->result));
-        $this->assertEquals('[order] The value you selected is not a valid choice.',$results->msg);
-        
-    }
-    
-    
-    public function testWithBeforeBadStamp()
-    {
-        $client = $this->createClient();
-        $crawler = $client->request('GET', '/queue/jobs',array('before' =>'2012'));
-
-        # request returned 200 ok
-        $this->assertEquals(
-            500,
-            $client->getResponse()->getStatusCode()
-        );
-        
-        $results = json_decode($client->getResponse()->getContent());
-        $this->assertEquals(0,count($results->result));
-        $this->assertEquals('[before] This value is not a valid datetime.',$results->msg);
-        
-    }
-    
-    public function testWithAfterBadStamp()
-    {
-        $client = $this->createClient();
-        $crawler = $client->request('GET', '/queue/jobs',array('after' =>'2012'));
-
-        # request returned 200 ok
-        $this->assertEquals(
-            500,
-            $client->getResponse()->getStatusCode()
-        );
-        
-        $results = json_decode($client->getResponse()->getContent());
-        $this->assertEquals(0,count($results->result));
-        $this->assertEquals('[after] This value is not a valid datetime.',$results->msg);
-        
-    }
-    
-    
-    public function testQueryWithOffsetAndLimit()
-    {
-        $client = $this->createClient();
-        $crawler = $client->request('GET', '/queue/jobs',array('offset' =>5,'limit' => 10));
-
-        # request returned 200 ok
-        $this->assertEquals(
-            200,
-            $client->getResponse()->getStatusCode()
-        );
-        
-        $results = json_decode($client->getResponse()->getContent());
-        # only 95 as 100 rows in db with offset 5
-        $this->assertEquals(10,count($results->result));
-        
-    }
-    
-    
-    public function testQueryWithOffsetAndLimitAndDescOrder()
-    {
-        $client = $this->createClient();
-        $crawler = $client->request('GET', '/queue/jobs',array('offset' =>5,'limit' => 10,'order' => 'desc'));
-
-        # request returned 200 ok
-        $this->assertEquals(
-            200,
-            $client->getResponse()->getStatusCode()
-        );
-        
-        $results = json_decode($client->getResponse()->getContent());
-        # only 95 as 100 rows in db with offset 5
-        $this->assertEquals(10,count($results->result));
-        $this->assertEquals('8394fa82-ef63-36b3-a9cd-8b9dde7a10b4',$results->result[0]->jobId);
-        
-    }
-    
-    
-    public function testQueryWithOffsetAndLimitAndDescOrderBeforeANDAfter()
-    {
-        $client = $this->createClient();
-        $crawler = $client->request('GET', '/queue/jobs',array('offset' =>0,'limit' => 100,'order' => 'desc','before' => '2012-12-19 05:39:00', 'after' => '2012-12-19 05:32:00'));
-
-        # request returned 200 ok
-        $this->assertEquals(
-            200,
-            $client->getResponse()->getStatusCode()
-        );
-        
-        $results = json_decode($client->getResponse()->getContent());
-        
-        # date range constrains result to 14 rows - 5 offset =9 
-        $this->assertEquals(8,count($results->result));
-        $this->assertEquals('cf79e521-401d-37b8-acd9-dcb4edb5fa51',$results->result[0]->jobId);
-        $this->assertEquals('71b55e88-7728-3e6c-ac70-4b7760cf3c48',$results->result[6]->jobId);
-        
-    } 
     
    
-   */
-   
+    public function testGetTagsEmptyTitle()
+    {
+        $client = $this->createClient();
+        $crawler = $client->request('GET', '/tags',array(
+                                                'limit'    => 10,
+                                                'offset'   => 0,
+                                                'dir'      => 'asc',
+                                                'order'    => 'title',
+                                                'tagTitle' => '' 
+                                    ));
+
+        # request returned 200 ok
+        $this->assertEquals(
+            200,
+            $client->getResponse()->getStatusCode()
+        );
+        
+        $results = json_decode($client->getResponse()->getContent());
+        
+        $this->assertEquals(10,count($results->result));
+            
+    }
+    
+    
+    public function testGetTagsMiniParams()
+    {
+        $client = $this->createClient();
+        $crawler = $client->request('GET', '/tags',array());
+
+        # request returned 200 ok
+        $this->assertEquals(
+            200,
+            $client->getResponse()->getStatusCode()
+        );
+        
+        $results = json_decode($client->getResponse()->getContent());
+        
+        $this->assertEquals(100,count($results->result));
+        
+    }
+    
+    
+    public function testGetTagsOrderByCreatedDate()
+    {
+        $client = $this->createClient();
+        $crawler = $client->request('GET', '/tags',array('order'=>'created'));
+
+        # request returned 200 ok
+        $this->assertEquals(
+            200,
+            $client->getResponse()->getStatusCode()
+        );
+        
+        $results = json_decode($client->getResponse()->getContent());
+        
+        $this->assertEquals(100,count($results->result));
+        
+    }
+    
+    
+    public function testGetTagsOrderByWeightDate()
+    {
+        $client = $this->createClient();
+        $crawler = $client->request('GET', '/tags', array('order'=>'weight'));
+
+        # request returned 200 ok
+        $this->assertEquals(
+            200,
+            $client->getResponse()->getStatusCode()
+        );
+        
+        $results = json_decode($client->getResponse()->getContent());
+        
+        $this->assertEquals(100,count($results->result));
+        
+    }
+    
+    
+    public function testGetTagsDirDesc()
+    {
+        $client = $this->createClient();
+        $crawler = $client->request('GET', '/tags', array('dir'=>'desc'));
+
+        # request returned 200 ok
+        $this->assertEquals(
+            200,
+            $client->getResponse()->getStatusCode()
+        );
+        
+        $results = json_decode($client->getResponse()->getContent());
+    }
+    
+    
+    public function testGetTagsTitleSearch()
+    {
+        $client = $this->createClient();
+        $crawler = $client->request('GET', '/tags', array('dir'=>'desc','order'=>'title','limit' => 10,'tagTitle' => 'r'));
+
+        # request returned 200 ok
+        $this->assertEquals(
+            200,
+            $client->getResponse()->getStatusCode()
+        );
+        
+        $results = json_decode($client->getResponse()->getContent());
+        
+    }
+    
+    
 }
 
 /* End of File */

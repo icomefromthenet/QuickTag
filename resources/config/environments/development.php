@@ -21,6 +21,17 @@ $app->register(new Silex\Provider\MonologServiceProvider(), array(
 ));
 
 # ----------------------------------------------------
+# Log queries into a file
+# ---------------------------------------------------
+
+$app->before(function() use ($app) {
+   
+   $logger = new DBALGateway\Feature\StreamQueryLogger($app['monolog']);
+   
+   $app['dispatcher']->addSubscriber($logger);
+    
+});
+# ----------------------------------------------------
 # Setup Database and PDOSessionHandler
 # 
 # ---------------------------------------------------

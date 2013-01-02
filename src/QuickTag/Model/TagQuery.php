@@ -53,7 +53,7 @@ class TagQuery extends AbstractQuery
     
     public function filterByNameStartsWith($start)
     {
-        $this->andWhere($this->expr()->like('tag_title',':tag_title_start'))->setParameter('tag_title_start',$start,$this->getGateway()->getMetaData()->getColumn('tag_title')->getType());
+        $this->andWhere($this->expr()->like('tag_title',':tag_title_start'))->setParameter('tag_title_start',$start.'%',$this->getGateway()->getMetaData()->getColumn('tag_title')->getType());
         
         return $this;
     }

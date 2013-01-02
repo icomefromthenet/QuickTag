@@ -56,4 +56,12 @@ $app->register(new QuickTag\Silex\Provider\TagServiceProvider('qtag'), array(
                                 )
               ));
 
+              
+#------------------------------------------------------------------
+# Setup Routes / Controllers
+#
+#------------------------------------------------------------------
+
+$app->mount('/', new QuickTag\Silex\Controllers\TagProvider('qtag'));
+
 return $app;

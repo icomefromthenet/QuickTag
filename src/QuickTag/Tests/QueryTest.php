@@ -89,7 +89,7 @@ class QueryTest extends  TestsWithFixture
                     ->filterByNameStartsWith($name);
                     
         $this->assertRegExp('/WHERE tag_title LIKE :tag_title_start/',$query->getSql());
-        $this->assertEquals($name,$query->getParameter('tag_title_start'));
+        $this->assertEquals($name.'%',$query->getParameter('tag_title_start'));
         
     }
     
