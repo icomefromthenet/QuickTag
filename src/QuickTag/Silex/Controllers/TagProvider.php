@@ -164,13 +164,15 @@ class TagProvider extends BaseProvider implements ControllerProviderInterface
         $dir      = $req->get('dir','asc');
         $order    = $req->get('order','title');
         $tagTitle = $req->get('tagTitle','');
+        $user     = $req->get('user',null);
         
         $errors = $this->getValidator()->validateValue(array(
                                                         'limit'    => $limit,
                                                         'offset'   => $offset,
                                                         'dir'      => $dir,
                                                         'order'    => $order,
-                                                        'tagTitle' => $tagTitle
+                                                        'tagTitle' => $tagTitle,
+                                                        'user'     => $user,
                                                         ) , $this->getQueryValidationRules());
             
         if (count($errors) > 0) {
@@ -190,6 +192,11 @@ class TagProvider extends BaseProvider implements ControllerProviderInterface
            $query->orderByWeight($dir);
         } else {
             $query->orderByCreated($dir);
+        }
+        
+        # filter by user context
+        if($user !== null) {
+            $query->filterByUserContext($user);
         }
         
         # search for a tag starting with xxx        

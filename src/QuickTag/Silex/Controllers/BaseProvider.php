@@ -93,6 +93,9 @@ class BaseProvider implements ControllerProviderInterface
                                 'tagTitle'  => array(
                                                 new Assert\Type('string'), new Assert\Length(array('min' =>1, 'max' =>45))
                                             ),
+                                'user'      => array(
+                                                new Assert\Type('integer'), 
+                                            ),
         ));
         
     }

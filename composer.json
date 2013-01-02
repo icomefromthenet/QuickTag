@@ -1,5 +1,5 @@
 {
-    "name": "icomefromthenet/QuickTag",
+    "name": "icomefromthenet/quicktag",
     "description": "Tag Library build on Doctrine DBAL",
     "keywords": [ "doctrine","tag" ],
     "homepage": "http://github.com/icomefromthenet/QuickTag",

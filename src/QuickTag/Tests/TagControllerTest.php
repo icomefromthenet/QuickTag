@@ -1,6 +1,8 @@
 <?php
 namespace QuickTag\Tests;
 
+use Zend\Tag\Cloud;
+use QuickTag\Model\StoredTag;
 
 
 class TagControllerTest extends TestsWithFixture
@@ -221,6 +223,29 @@ class TagControllerTest extends TestsWithFixture
             
     }
     
+    public function testGetTagsBadUserParam()
+    {
+        $client = $this->createClient();
+        $crawler = $client->request('GET', '/tags',array(
+                                                'limit'    => 10,
+                                                'offset'   => 0,
+                                                'dir'      => 'asc',
+                                                'order'    => 'title',
+                                                'tagTitle' => '',
+                                                'user'     => 'nouser'
+                                    ));
+
+        # request returned 200 ok
+        $this->assertEquals(
+            400,
+            $client->getResponse()->getStatusCode()
+        );
+        
+        $results = json_decode($client->getResponse()->getContent());
+        
+        $this->assertEquals('[user] This value should be of type integer.',$results->msg);
+        
+    }
     
     public function testGetTagsMiniParams()
     {
@@ -294,7 +319,7 @@ class TagControllerTest extends TestsWithFixture
     public function testGetTagsTitleSearch()
     {
         $client = $this->createClient();
-        $crawler = $client->request('GET', '/tags', array('dir'=>'desc','order'=>'title','limit' => 10,'tagTitle' => 'r'));
+        $crawler = $client->request('GET', '/tags', array('dir'=>'desc','order'=>'title','limit' => 10,'tagTitle' => 'r','user' => 1));
 
         # request returned 200 ok
         $this->assertEquals(
@@ -306,7 +331,23 @@ class TagControllerTest extends TestsWithFixture
         
     }
     
+    public function testZendTagCloud()
+    {
+        $tag = $this->app['qtag'];
+        
+        $tagA = $tag->lookupTag(1);
+        $tagB = $tag->lookupTag(1);
+        $tagC = $tag->lookupTag(1);
+        
+        $cloud = new Cloud(array(
+            'tags' => array(
+               $tagA,$tagB,$tagC
+            )
+        ));
+        
+        // Render the cloud
+        $this->assertNotEmpty((string)$cloud);
     
+    }
 }
-
 /* End of File */
