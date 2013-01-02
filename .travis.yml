@@ -9,7 +9,7 @@ before_script:
   - pyrus install --force phpunit/DbUnit
   - phpenv rehash
   - mysql -e 'create database IF NOT EXISTS quick_tag;'
-  - ./vendor/bin/migrate.php app:install --path migrations --force --dsn mysql://root:@127.0.0.1/quick_tag?migration_table=migrations_data
+  - ./vendor/bin/migrate.php app:install --path migrations --dsn mysql://root:@127.0.0.1/quick_tag?migration_table=migrations_data
   - ./vendor/bin/migrate.php app:build --path migrations --force --dsn mysql://root:@127.0.0.1/quick_tag?migration_table=migrations_data
   
   
