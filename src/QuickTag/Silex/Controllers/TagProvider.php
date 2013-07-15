@@ -159,8 +159,8 @@ class TagProvider extends BaseProvider implements ControllerProviderInterface
             'result' => array()
         );
         
-        $limit    = $req->get('limit',100);
-        $offset   = $req->get('offset',0);
+        $limit    = (int)$req->get('limit',100);
+        $offset   = (int)$req->get('offset',0);
         $dir      = $req->get('dir','asc');
         $order    = $req->get('order','title');
         $tagTitle = $req->get('tagTitle','');
