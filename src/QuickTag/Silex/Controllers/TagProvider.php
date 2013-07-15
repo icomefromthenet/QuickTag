@@ -154,14 +154,13 @@ class TagProvider extends BaseProvider implements ControllerProviderInterface
       */
     public function getTagsAction(Application $app, Request $req)
     {
-        
         $response = array(
             'msg'    => null,
             'result' => array()
         );
         
-        $limit    = (int)$req->get('limit',100);
-        $offset   = (int)$req->get('offset',0);
+        $limit    = $req->get('limit',100);
+        $offset   = $req->get('offset',0);
         $dir      = $req->get('dir','asc');
         $order    = $req->get('order','title');
         $tagTitle = $req->get('tagTitle','');
@@ -179,7 +178,6 @@ class TagProvider extends BaseProvider implements ControllerProviderInterface
         if (count($errors) > 0) {
             $this->getContainer()->abort(400,$this->serializeValidationErrors($errors));
         }
-        
         
         # fetch query object
         $query = $this->getTagLibrary()->findTag()
