@@ -19,9 +19,7 @@
         }
     ],
     "require-dev" : {
-        "icomefromthenet/faker"     : "dev-master",
-        "icomefromthenet/migration" : "dev-master",
-        "monolog/monolog"           : "1.2.*",
+        "monolog/monolog"           : ">=1.2.*",
         "silex/silex"               : "dev-master",
         "symfony/dom-crawler"       : "dev-master",
         "symfony/browser-kit"       : "dev-master"
@@ -29,8 +27,8 @@
     
     "require" : {
         "icomefromthenet/dbal-gateway" : "dev-master",
-        "symfony/event-dispatcher"     : "2.1.*",
-        "symfony/validator"            : "2.1.*"
+        "symfony/event-dispatcher"     : ">=2.1.*",
+        "symfony/validator"            : ">=2.1.*"
     },
     
     "autoload": {
